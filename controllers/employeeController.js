@@ -80,3 +80,21 @@ exports.deleteEmployee = async(req,res) => {
         res.status(500).json({message: `Error while deleting User ${err}`})
     }
 }
+
+
+exports.markAttendance = async(req,res)=> {
+    const {id} = req.params;
+    const {attendance} = req.body;
+    try{
+        const findEmployee = await Employee.findById(id);
+        if(!findEmployee) {
+            return res.status(404).json({message: 'Employee not Found'});
+        }
+
+        findEmployee.attendance = attendance;
+        await findEmployee.save();
+        return res.status(200).json({message: "Successfully marked attendance"});
+    }catch(err) {   
+        return res.status(500).json({message: `Error while marking attendance: ${err}`});
+    }
+}
