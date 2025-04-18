@@ -1,10 +1,10 @@
 const express = require('express');
-const router = express.Router();
-const {createCandidate, EditCandidate, deleteCandidate} = require('../controllers/candidateController');
 const Authentication = require('../middleware/Authentication');
+const {createCandidate, EditCandidate, deleteCandidate} = require('../controllers/candidateController');
+const router = express.Router();
 
 router.post('/create',Authentication,createCandidate);
-router.put('/edit',Authentication,EditCandidate);
-router.delete('/delete',Authentication,deleteCandidate);
+router.put('/edit/:id',Authentication,EditCandidate);
+router.delete('/delete/:id',Authentication,deleteCandidate);
 
 module.exports = router;
