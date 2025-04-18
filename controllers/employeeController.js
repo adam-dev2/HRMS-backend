@@ -1,4 +1,5 @@
 const Employee = require('../models/Employee');
+const Leave = require('../models/Leave');
 
 const isValidEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -7,6 +8,17 @@ const isValidEmail = (email) => {
 const isValidPhone = (phone) => {
     return /^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s|[-()]/g, ""));
 };
+
+
+exports.getAllEmployees = async(req,res) => {
+    try{
+        const Employees = await Employee.find();
+        
+        return res.status(200).json({message: "Fetched all Employees",Employees})
+    }catch(err) {
+        return res.status(500).json({message: `Error while fetching all the Employees:; ${err}`});
+    }
+}
 
 exports.createEmployee = async (req,res)=>{
     const {fullname,phonenumber,position,email,department,dateOfJoining} = req.body;
@@ -96,5 +108,31 @@ exports.markAttendance = async(req,res)=> {
         return res.status(200).json({message: "Successfully marked attendance"});
     }catch(err) {   
         return res.status(500).json({message: `Error while marking attendance: ${err}`});
+    }
+}
+
+exports.applyLeave = async(req,res)=>{
+    const {id,date,reason,designation,documents,status} = req.body;
+    try{
+        const newLeave = new Leave({employee,date,reason,designation,documents,status});
+        await newLeave.save();
+    }catch(err) {
+        return res.status(500).json({message: `Error while applying leave ${err}`});
+    }
+}
+
+exports.updateLeave = async(req,res)=>{
+    const id = req.body.employeeid;
+    const status = req.body.status;
+    try{
+        const findEmployee = await Leave.findById(id);
+        if(!findEmployee) {
+            return res.status(404).json({message: `user not found`});
+        }
+        findEmployee.status = status;
+        await findEmployee.save();
+        return res.status(200).json({message: 'Leave updated successfully'});
+    }catch(err) {
+        return res.status(500).json({message: `Error while Update Leave ${err}`})
     }
 }

@@ -8,6 +8,16 @@ const isValidPhone = (phone) => {
     return /^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s|[-()]/g, ""));
 };
   
+exports.getAllCandidates = async(req,res) => {
+    try{
+        const Candidates = await Candidate.find();
+        
+        return res.status(200).json({message: "Fetched all Candidates",Candidates})
+    }catch(err) {
+        return res.status(500).json({message: `Error while fetching all the candidates:; ${err}`});
+    }
+}
+
 exports.createCandidate = async (req,res)=>{
     const {fullname,phonenumber,experience,email,position,resume,status} = req.body;
     if(!fullname || !phonenumber || !experience || !email || !position || !resume ) {
