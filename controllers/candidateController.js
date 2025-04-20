@@ -11,17 +11,23 @@ const isValidPhone = (phone) => {
 exports.getAllCandidates = async(req,res) => {
     try{
         const Candidates = await Candidate.find();
-        
+        console.log(Candidates)
         return res.status(200).json({message: "Fetched all Candidates",Candidates})
     }catch(err) {
+        console.log(err)
         return res.status(500).json({message: `Error while fetching all the candidates:; ${err}`});
     }
 }
 
 exports.createCandidate = async (req,res)=>{
     const {fullname,phonenumber,experience,email,position,resume,status} = req.body;
-    if(!fullname || !phonenumber || !experience || !email || !position || !resume ) {
+    console.log(fullname,phonenumber,experience,email,position,resume,status)
+    if(!fullname || !phonenumber || !experience || !email || !position) {
         return res.status(400).json({message: "All fields are required"});
+    }
+    const resumePath = req.file?.path;
+    if(!resumePath) {
+        return res.status(400).json({message:'Resume file is required'});
     }
     if(!isValidEmail(email)) {
         return res.status(400).json({message: "Invalid Email"});
@@ -35,7 +41,7 @@ exports.createCandidate = async (req,res)=>{
         if(findCandidate) {
             return res.status(400).json({message: "Candidate with this Email already Exists"});
         }
-        const newCandidate = new Candidate({fullname,phonenumber,experience,email,position,resume,status});
+        const newCandidate = new Candidate({fullname,phonenumber,experience,email,position,resume: resumePath.replace(/\\/g, '/'),status});
         await newCandidate.save();
         return res.status(201).json({message: "Candidate Created Successfully", userdetails: newCandidate});
     }catch(err){
@@ -43,37 +49,43 @@ exports.createCandidate = async (req,res)=>{
     }
 }
 
-exports.EditCandidate = async(req,res)=>{
-    const {id} = req.params;
-    const {fullname,phonenumber,experience,email,position,resume,status} = req.body;
-    if(!fullname || !phonenumber || !experience || !email || !position || !resume ) {
-        return res.status(400).json({message: "All fields are required"});
-    }
-    if(!isValidEmail(email)) {
-        return res.status(400).json({message: "Invalid Email"});
-    }
-    const cleanPhone = phonenumber.replace(/\s|[-()]/g, "");
-    if (!isValidPhone(cleanPhone)) {
-        return res.status(400).json({ message: "Invalid phone number format" });
-    }
-    try{
-        const existingCandidate = await Candidate.findById(id);
-        if(!existingCandidate) {
-            return res.status(404).json({message: "Candidate not found"});
+exports.EditCandidate = async (req, res) => {
+    const { id } = req.params;
+    const { fullname, phonenumber, experience, email, position, status } = req.body;
+    const resumePath = req.file?.path;
+  
+    try {
+      const existingCandidate = await Candidate.findById(id);
+      if (!existingCandidate) {
+        return res.status(404).json({ message: "Candidate not found" });
+      }
+  
+      if (fullname) existingCandidate.fullname = fullname;
+      if (phonenumber) {
+        const cleanPhone = phonenumber.replace(/\s|[-()]/g, "");
+        if (!isValidPhone(cleanPhone)) {
+          return res.status(400).json({ message: "Invalid phone number format" });
         }
-        existingCandidate.fullname = fullname;
         existingCandidate.phonenumber = cleanPhone;
-        existingCandidate.experience = experience;
+      }
+      if (experience) existingCandidate.experience = experience;
+      if (email) {
+        if (!isValidEmail(email)) {
+          return res.status(400).json({ message: "Invalid Email" });
+        }
         existingCandidate.email = email;
-        existingCandidate.resume = resume;
-        existingCandidate.status = status;
-
-        await existingCandidate.save();
-        return res.status(200).json({message: "Updated Candidate information"});
-    }catch(err) {
-        return res.status(500).json({message: `Server Error: ${err}`});
+      }
+      if (position) existingCandidate.position = position;
+      if (status) existingCandidate.status = status;
+      if (resumePath) existingCandidate.resume = resumePath.replace(/\\/g, '/');
+  
+      await existingCandidate.save();
+      return res.status(200).json({ message: "Updated Candidate information" });
+    } catch (err) {
+      return res.status(500).json({ message: `Server Error: ${err}` });
     }
-}   
+  };
+    
 
 
 exports.deleteCandidate = async (req,res)=>{

@@ -13,7 +13,6 @@ const isValidPhone = (phone) => {
 exports.getAllEmployees = async(req,res) => {
     try{
         const Employees = await Employee.find();
-        
         return res.status(200).json({message: "Fetched all Employees",Employees})
     }catch(err) {
         return res.status(500).json({message: `Error while fetching all the Employees:; ${err}`});
@@ -124,7 +123,7 @@ exports.applyLeave = async(req,res)=>{
 exports.updateLeave = async(req,res)=>{
     const id = req.body.employeeid;
     const status = req.body.status;
-    try{
+    try{4
         const findEmployee = await Leave.findById(id);
         if(!findEmployee) {
             return res.status(404).json({message: `user not found`});
